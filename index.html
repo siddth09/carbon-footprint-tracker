@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="EcoLens — Track, understand, and reduce your carbon footprint with personalized insights and eco-challenges.">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data:;">
+  <title>EcoLens — Carbon Footprint Tracker</title>
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+  <!-- Styles -->
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+
+  <!-- Particle Background -->
+  <canvas id="particles-canvas" aria-hidden="true"></canvas>
+
+  <!-- Accessibility: Live region for dynamic announcements -->
+  <div id="aria-live-region" class="sr-only" aria-live="polite" aria-atomic="true"></div>
+
+  <!-- ═══════════════════════════════════════════
+       NAVIGATION
+       ═══════════════════════════════════════════ -->
+  <nav class="navbar" role="navigation" aria-label="Main navigation">
+    <div class="container">
+      <div class="navbar-brand">
+        <div class="logo-icon" aria-hidden="true">🌿</div>
+        <span class="text-gradient">EcoLens</span>
+      </div>
+
+      <button class="nav-toggle" id="nav-toggle" aria-label="Toggle navigation menu" aria-expanded="false">
+        <span></span><span></span><span></span>
+      </button>
+
+      <ul class="nav-links" id="nav-links" role="menubar">
+        <li role="none"><a href="#dashboard" role="menuitem" class="active" data-page="dashboard" id="nav-dashboard"><span class="nav-icon" aria-hidden="true">📊</span> Dashboard</a></li>
+        <li role="none"><a href="#tracker" role="menuitem" data-page="tracker" id="nav-tracker"><span class="nav-icon" aria-hidden="true">📝</span> Log</a></li>
+        <li role="none"><a href="#insights" role="menuitem" data-page="insights" id="nav-insights"><span class="nav-icon" aria-hidden="true">💡</span> Insights</a></li>
+        <li role="none"><a href="#challenges" role="menuitem" data-page="challenges" id="nav-challenges"><span class="nav-icon" aria-hidden="true">🏆</span> Challenges</a></li>
+        <li role="none"><a href="#settings" role="menuitem" data-page="settings" id="nav-settings"><span class="nav-icon" aria-hidden="true">⚙️</span> Settings</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <!-- ═══════════════════════════════════════════
+       MAIN CONTENT
+       ═══════════════════════════════════════════ -->
+  <main class="page-content" role="main">
+    <div class="container">
+
+      <!-- ──────── ONBOARDING ──────── -->
+      <section id="section-onboarding" class="section" aria-label="Onboarding quiz">
+        <div class="onboarding-container">
+          <!-- Step indicator -->
+          <div class="step-indicator" id="quiz-steps" role="progressbar" aria-valuenow="1" aria-valuemin="1" aria-valuemax="5">
+            <!-- Rendered by calculator.js -->
+          </div>
+
+          <!-- Welcome Step -->
+          <div class="quiz-step active" id="quiz-welcome" data-step="0">
+            <div class="card text-center" style="padding: var(--space-3xl) var(--space-xl);">
+              <div style="font-size: 4rem; margin-bottom: var(--space-lg);" aria-hidden="true">🌍</div>
+              <h1 class="section-title">Welcome to <span class="text-gradient">EcoLens</span></h1>
+              <p class="section-subtitle" style="max-width: 460px; margin: var(--space-md) auto var(--space-2xl);">
+                Let's understand your carbon footprint. Answer a few quick questions and get personalized insights to help you make a positive impact.
+              </p>
+              <div class="form-group" style="max-width: 300px; margin: 0 auto var(--space-xl);">
+                <label for="input-name" class="form-label">What should we call you?</label>
+                <input type="text" id="input-name" class="form-input" placeholder="Your name" maxlength="50" autocomplete="given-name">
+              </div>
+              <button class="btn btn-primary btn-lg" id="btn-start-quiz" type="button">
+                Get Started →
+              </button>
+            </div>
+          </div>
+
+          <!-- Category Quiz Steps (rendered by calculator.js) -->
+          <div class="quiz-step" id="quiz-transport" data-step="1"></div>
+          <div class="quiz-step" id="quiz-food" data-step="2"></div>
+          <div class="quiz-step" id="quiz-energy" data-step="3"></div>
+          <div class="quiz-step" id="quiz-lifestyle" data-step="4"></div>
+
+          <!-- Results Step -->
+          <div class="quiz-step" id="quiz-results" data-step="5">
+            <div class="results-container">
+              <p class="text-muted text-sm" style="margin-bottom: var(--space-sm);">Your estimated annual carbon footprint</p>
+              <div class="results-total text-gradient" id="results-total-value" aria-live="polite">0 kg</div>
+              <p class="text-muted" id="results-total-label">CO₂ equivalent per year</p>
+
+              <!-- Category breakdown -->
+              <div class="grid grid-4 stagger" id="results-breakdown" style="margin: var(--space-2xl) 0;">
+                <!-- Rendered by calculator.js -->
+              </div>
+
+              <!-- Comparison bars -->
+              <div class="card" style="text-align: left; margin: var(--space-xl) 0;">
+                <h3 style="margin-bottom: var(--space-lg);">How you compare</h3>
+                <div class="results-comparison" id="results-comparison">
+                  <!-- Rendered by calculator.js -->
+                </div>
+              </div>
+
+              <button class="btn btn-primary btn-lg btn-full" id="btn-finish-quiz" type="button" style="margin-top: var(--space-lg);">
+                🚀 Start Tracking & Reducing
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ──────── DASHBOARD ──────── -->
+      <section id="section-dashboard" class="section" aria-label="Dashboard">
+        <div class="section-header">
+          <h1 class="section-title" id="dashboard-greeting">Good morning</h1>
+          <p class="section-subtitle" id="dashboard-subtitle">Here's your carbon footprint overview</p>
+        </div>
+
+        <!-- Stat cards -->
+        <div class="grid grid-4 stagger" id="dashboard-stats">
+          <div class="card stat-card" id="stat-monthly">
+            <div class="card-header"><span class="card-title">This Month</span><span class="card-icon" aria-hidden="true">📊</span></div>
+            <div class="stat-value text-gradient" id="stat-monthly-value">0 kg</div>
+            <div class="stat-label">CO₂ emitted</div>
+            <div class="stat-change positive" id="stat-monthly-change" aria-label="Monthly change"></div>
+          </div>
+          <div class="card stat-card" id="stat-daily">
+            <div class="card-header"><span class="card-title">Today</span><span class="card-icon" aria-hidden="true">📅</span></div>
+            <div class="stat-value" id="stat-daily-value">0 kg</div>
+            <div class="stat-label">CO₂ emitted</div>
+          </div>
+          <div class="card stat-card" id="stat-streak">
+            <div class="card-header"><span class="card-title">Log Streak</span><span class="card-icon" aria-hidden="true">🔥</span></div>
+            <div class="stat-value" id="stat-streak-value" style="color: var(--color-warning);">0</div>
+            <div class="stat-label">consecutive days</div>
+          </div>
+          <div class="card stat-card" id="stat-goal">
+            <div class="card-header"><span class="card-title">Goal Progress</span><span class="card-icon" aria-hidden="true">🎯</span></div>
+            <div class="stat-value" id="stat-goal-value" style="color: var(--accent-primary);">0%</div>
+            <div class="stat-label" id="stat-goal-label">of reduction goal</div>
+          </div>
+        </div>
+
+        <!-- Charts row -->
+        <div class="grid grid-2" style="margin-top: var(--space-lg);">
+          <div class="card">
+            <div class="card-header">
+              <span class="card-title">Category Breakdown</span>
+            </div>
+            <div class="chart-wrapper" style="max-height: 260px;">
+              <canvas id="chart-category" aria-label="Carbon emissions by category"></canvas>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-header">
+              <span class="card-title">30-Day Trend</span>
+            </div>
+            <div class="chart-wrapper" style="max-height: 260px;">
+              <canvas id="chart-trend" aria-label="30-day emission trend"></canvas>
+            </div>
+          </div>
+        </div>
+
+        <!-- Quick log -->
+        <div class="card" style="margin-top: var(--space-lg);">
+          <div class="card-header">
+            <span class="card-title">Quick Log</span>
+            <button class="btn btn-sm btn-secondary" id="btn-go-to-tracker" type="button">See all →</button>
+          </div>
+          <div class="quicklog-grid" id="quicklog-grid">
+            <!-- Rendered by dashboard.js -->
+          </div>
+        </div>
+      </section>
+
+      <!-- ──────── TRACKER ──────── -->
+      <section id="section-tracker" class="section" aria-label="Activity tracker">
+        <div class="section-header flex-between">
+          <div>
+            <h1 class="section-title">Activity Log</h1>
+            <p class="section-subtitle">Track your daily carbon emissions</p>
+          </div>
+          <button class="btn btn-primary" id="btn-add-activity" type="button">+ Log Activity</button>
+        </div>
+
+        <!-- Date filter -->
+        <div class="flex gap-md" style="margin-bottom: var(--space-lg); flex-wrap: wrap;">
+          <input type="date" id="tracker-date" class="form-input" style="max-width: 200px;" aria-label="Select date">
+          <div class="flex gap-sm" id="tracker-category-filter">
+            <button class="tag active" data-filter="all" type="button">All</button>
+            <button class="tag" data-filter="transport" type="button">🚗 Transport</button>
+            <button class="tag" data-filter="food" type="button">🍽️ Food</button>
+            <button class="tag" data-filter="energy" type="button">⚡ Energy</button>
+            <button class="tag" data-filter="lifestyle" type="button">🌱 Lifestyle</button>
+          </div>
+        </div>
+
+        <!-- Daily summary -->
+        <div class="card card-sm" style="margin-bottom: var(--space-lg);">
+          <div class="flex-between">
+            <div>
+              <span class="text-sm text-muted">Daily Total</span>
+              <div style="font-size: 1.5rem; font-weight: 800;" id="tracker-daily-total">0 kg CO₂</div>
+            </div>
+            <div id="tracker-daily-comparison" class="text-sm text-muted"></div>
+          </div>
+        </div>
+
+        <!-- Activity list -->
+        <div class="activity-list" id="activity-list">
+          <!-- Rendered by tracker.js -->
+        </div>
+        <div class="empty-state" id="tracker-empty" style="display: none;">
+          <div class="empty-state-icon" aria-hidden="true">📝</div>
+          <div class="empty-state-title">No activities logged</div>
+          <p class="empty-state-text">Start logging your daily activities to track your carbon footprint and get personalized insights.</p>
+          <button class="btn btn-primary" id="btn-add-first-activity" type="button">Log Your First Activity</button>
+        </div>
+      </section>
+
+      <!-- ──────── INSIGHTS ──────── -->
+      <section id="section-insights" class="section" aria-label="Personalized insights">
+        <div class="section-header">
+          <h1 class="section-title">💡 Personalized Insights</h1>
+          <p class="section-subtitle">Smart recommendations based on your activity patterns</p>
+        </div>
+
+        <!-- Insights summary -->
+        <div class="grid grid-3" style="margin-bottom: var(--space-xl);" id="insights-summary">
+          <!-- Rendered by insights.js -->
+        </div>
+
+        <!-- Insight cards -->
+        <div class="flex flex-col gap-md stagger" id="insights-list">
+          <!-- Rendered by insights.js -->
+        </div>
+        <div class="empty-state" id="insights-empty" style="display: none;">
+          <div class="empty-state-icon" aria-hidden="true">💡</div>
+          <div class="empty-state-title">Insights are on their way</div>
+          <p class="empty-state-text">Log activities for a few days and we'll generate personalized recommendations to help you reduce your footprint.</p>
+        </div>
+      </section>
+
+      <!-- ──────── CHALLENGES ──────── -->
+      <section id="section-challenges" class="section" aria-label="Eco challenges">
+        <div class="section-header">
+          <h1 class="section-title">🏆 Eco Challenges</h1>
+          <p class="section-subtitle">Take on challenges to reduce your impact and earn XP</p>
+        </div>
+
+        <!-- Level & XP -->
+        <div class="card" style="margin-bottom: var(--space-xl);">
+          <div class="level-display">
+            <div class="level-badge" id="level-badge">1</div>
+            <div class="level-info">
+              <div class="level-label" id="level-label">Level 1 — Eco Beginner</div>
+              <div class="xp-bar"><div class="xp-fill" id="xp-fill" style="width: 0%;"></div></div>
+              <div class="xp-text" id="xp-text">0 / 100 XP</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Active challenge -->
+        <h3 style="margin-bottom: var(--space-md);">Active Challenge</h3>
+        <div id="active-challenge" style="margin-bottom: var(--space-2xl);">
+          <!-- Rendered by challenges.js -->
+        </div>
+
+        <!-- Available challenges -->
+        <h3 style="margin-bottom: var(--space-md);">Available Challenges</h3>
+        <div class="grid grid-3 stagger" id="challenges-list">
+          <!-- Rendered by challenges.js -->
+        </div>
+
+        <!-- Completed challenges -->
+        <h3 style="margin: var(--space-2xl) 0 var(--space-md);">Completed</h3>
+        <div class="grid grid-3" id="completed-challenges">
+          <!-- Rendered by challenges.js -->
+        </div>
+      </section>
+
+      <!-- ──────── SETTINGS ──────── -->
+      <section id="section-settings" class="section" aria-label="Settings">
+        <div class="section-header">
+          <h1 class="section-title">⚙️ Settings</h1>
+          <p class="section-subtitle">Customize your EcoLens experience</p>
+        </div>
+
+        <div class="card" style="max-width: 640px;">
+          <!-- Appearance -->
+          <div class="settings-section">
+            <div class="settings-section-title">Appearance</div>
+            <div class="setting-row">
+              <div>
+                <div class="setting-label">Dark Mode</div>
+                <div class="setting-desc">Switch between dark and light themes</div>
+              </div>
+              <label class="toggle" for="toggle-theme">
+                <input type="checkbox" id="toggle-theme" checked>
+                <span class="toggle-slider"></span>
+              </label>
+            </div>
+          </div>
+
+          <!-- Goals -->
+          <div class="settings-section">
+            <div class="settings-section-title">Reduction Goal</div>
+            <div class="setting-row">
+              <div style="flex: 1;">
+                <div class="setting-label">Annual reduction target</div>
+                <div class="setting-desc" id="goal-desc">Reduce your footprint by 25%</div>
+              </div>
+              <select class="form-select" id="select-goal" style="max-width: 160px;" aria-label="Reduction goal percentage">
+                <option value="10">10% reduction</option>
+                <option value="25" selected>25% reduction</option>
+                <option value="50">50% reduction</option>
+                <option value="75">75% reduction</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Region -->
+          <div class="settings-section">
+            <div class="settings-section-title">Region</div>
+            <div class="setting-row">
+              <div style="flex: 1;">
+                <div class="setting-label">Comparison country</div>
+                <div class="setting-desc">Compare against national averages</div>
+              </div>
+              <select class="form-select" id="select-country" style="max-width: 160px;" aria-label="Comparison country">
+                <option value="global">🌍 Global</option>
+                <option value="usa">🇺🇸 United States</option>
+                <option value="eu">🇪🇺 European Union</option>
+                <option value="uk">🇬🇧 United Kingdom</option>
+                <option value="india">🇮🇳 India</option>
+                <option value="china">🇨🇳 China</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Data -->
+          <div class="settings-section">
+            <div class="settings-section-title">Data Management</div>
+            <div class="setting-row">
+              <div>
+                <div class="setting-label">Export Data</div>
+                <div class="setting-desc">Download all your data as JSON</div>
+              </div>
+              <button class="btn btn-secondary btn-sm" id="btn-export" type="button">📥 Export</button>
+            </div>
+            <div class="setting-row">
+              <div>
+                <div class="setting-label">Retake Quiz</div>
+                <div class="setting-desc">Recalculate your baseline footprint</div>
+              </div>
+              <button class="btn btn-secondary btn-sm" id="btn-retake-quiz" type="button">🔄 Retake</button>
+            </div>
+            <div class="setting-row">
+              <div>
+                <div class="setting-label">Clear All Data</div>
+                <div class="setting-desc">Permanently delete all saved data</div>
+              </div>
+              <button class="btn btn-danger btn-sm" id="btn-clear-data" type="button">🗑️ Clear Data</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+    </div>
+  </main>
+
+  <!-- ═══════════════════════════════════════════
+       MODAL: Add Activity
+       ═══════════════════════════════════════════ -->
+  <div class="modal-backdrop" id="modal-add-activity" role="dialog" aria-modal="true" aria-label="Log an activity">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>Log Activity</h2>
+        <button class="modal-close" id="modal-close" type="button" aria-label="Close dialog">&times;</button>
+      </div>
+      <form id="form-add-activity" novalidate>
+        <div class="form-group" style="margin-bottom: var(--space-lg);">
+          <label for="activity-category" class="form-label">Category</label>
+          <select class="form-select" id="activity-category" required>
+            <option value="">Select category...</option>
+            <option value="transport">🚗 Transport</option>
+            <option value="food">🍽️ Food</option>
+            <option value="energy">⚡ Energy</option>
+            <option value="lifestyle">🌱 Lifestyle</option>
+          </select>
+        </div>
+        <div class="form-group" style="margin-bottom: var(--space-lg);">
+          <label for="activity-type" class="form-label">Activity</label>
+          <select class="form-select" id="activity-type" required>
+            <option value="">Select activity...</option>
+          </select>
+        </div>
+        <div class="form-group" style="margin-bottom: var(--space-lg);">
+          <label for="activity-quantity" class="form-label">Quantity</label>
+          <div class="flex gap-sm" style="align-items: center;">
+            <input type="number" class="form-input" id="activity-quantity" min="0" step="0.5" value="1" required style="flex: 1;" aria-describedby="quantity-unit">
+            <span class="text-muted text-sm" id="quantity-unit" style="min-width: 50px;"></span>
+          </div>
+        </div>
+        <div class="form-group" style="margin-bottom: var(--space-lg);">
+          <label for="activity-date" class="form-label">Date</label>
+          <input type="date" class="form-input" id="activity-date" required>
+        </div>
+        <div class="form-group" style="margin-bottom: var(--space-lg);">
+          <label for="activity-note" class="form-label">Note (optional)</label>
+          <input type="text" class="form-input" id="activity-note" placeholder="e.g. Drove to grocery store" maxlength="200">
+        </div>
+        <div class="flex-between" style="margin-top: var(--space-xl);">
+          <div>
+            <span class="text-sm text-muted">Estimated CO₂: </span>
+            <strong id="activity-estimate" style="color: var(--accent-primary);">0 kg</strong>
+          </div>
+          <button type="submit" class="btn btn-primary">✓ Log Activity</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Toast Container -->
+  <div class="toast-container" id="toast-container" aria-live="polite"></div>
+
+  <!-- ═══════════════════════════════════════════
+       SCRIPTS
+       ═══════════════════════════════════════════ -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+  <script src="js/data.js"></script>
+  <script src="js/storage.js"></script>
+  <script src="js/utils.js"></script>
+  <script src="js/calculator.js"></script>
+  <script src="js/tracker.js"></script>
+  <script src="js/insights.js"></script>
+  <script src="js/dashboard.js"></script>
+  <script src="js/challenges.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>

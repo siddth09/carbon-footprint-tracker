@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>EcoLens — Test Suite</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Inter', system-ui, sans-serif; background: #0f1117; color: #e5e5e5; padding: 2rem; }
+    h1 { margin-bottom: 1rem; font-size: 1.5rem; }
+    .summary { margin: 1rem 0; padding: 1rem; border-radius: 8px; background: #1a1d27; }
+    .pass { color: #25c174; }
+    .fail { color: #d94242; }
+    .test { padding: 0.5rem 0; border-bottom: 1px solid #2a2d37; display: flex; gap: 0.75rem; align-items: center; }
+    .test .icon { font-size: 1.2rem; }
+    .test .name { flex: 1; }
+    .test .status { font-weight: 600; font-size: 0.85rem; }
+    .group { margin: 1.5rem 0; }
+    .group-title { font-size: 1rem; font-weight: 700; color: #9ca3af; margin-bottom: 0.5rem; text-transform: uppercase; letter-spacing: 0.05em; font-size: 0.8rem; }
+  </style>
+</head>
+<body>
+  <h1>🧪 EcoLens Test Suite</h1>
+  <div class="summary" id="summary"></div>
+  <div id="results"></div>
+
+  <!-- Load app modules -->
+  <script src="../js/data.js"></script>
+  <script src="../js/storage.js"></script>
+  <script src="../js/utils.js"></script>
+  <script src="../js/tests.js"></script>
+</body>
+</html>
