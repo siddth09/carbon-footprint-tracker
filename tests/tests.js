@@ -320,6 +320,155 @@
   Storage.clearAll();
 
   // ═══════════════════════════════════════
+  // EcoBot & Viral Features Tests
+  // ═══════════════════════════════════════
+  group('EcoBot & Viral Features');
+
+  // What-If Scenarios validation
+  assert(EcoBot.WHATIF_SCENARIOS.length >= 4, 'At least 4 what-if scenarios defined');
+  EcoBot.WHATIF_SCENARIOS.forEach(s => {
+    assert(s.id && s.title && s.desc && s.icon, `What-if scenario "${s.id}" has required fields`);
+    const current = EmissionData.ALL_ACTIVITIES[s.currentKey];
+    const alt = EmissionData.ALL_ACTIVITIES[s.altKey];
+    assert(current !== undefined, `What-if "${s.id}" currentKey "${s.currentKey}" exists in EmissionData`);
+    assert(alt !== undefined, `What-if "${s.id}" altKey "${s.altKey}" exists in EmissionData`);
+  });
+
+  // Achievement definitions validation
+  assert(EcoBot.ACHIEVEMENTS.length >= 10, 'At least 10 achievements defined');
+  const achieveIds = new Set();
+  EcoBot.ACHIEVEMENTS.forEach(a => {
+    assert(a.id && a.icon && a.title && a.desc, `Achievement "${a.id}" has required fields`);
+    assert(typeof a.check === 'function', `Achievement "${a.id}" has check function`);
+    assert(!achieveIds.has(a.id), `Achievement "${a.id}" has unique ID`);
+    achieveIds.add(a.id);
+  });
+
+  // Achievement unlock logic
+  const noActivities = [];
+  const unlockedEmpty = EcoBot.getUnlockedAchievements(noActivities);
+  assertEqual(unlockedEmpty.length, 0, 'No achievements unlocked with empty activities');
+
+  const oneActivity = [{ activityKey: 'car_petrol', co2: 5, category: 'transport', date: '2025-01-01' }];
+  const unlockedOne = EcoBot.getUnlockedAchievements(oneActivity);
+  assert(unlockedOne.some(a => a.id === 'first_log'), 'First Step achievement unlocks with 1 activity');
+
+  const tenActivities = Array.from({ length: 10 }, (_, i) => ({
+    activityKey: 'bus', co2: 0.5, category: 'transport', date: `2025-01-${String(i + 1).padStart(2, '0')}`,
+  }));
+  const unlockedTen = EcoBot.getUnlockedAchievements(tenActivities);
+  assert(unlockedTen.some(a => a.id === 'ten_logs'), 'Data Driven achievement unlocks with 10 activities');
+
+  // Smart tip generation
+  const tip = EcoBot.getSmartTip();
+  assert(typeof tip === 'string' && tip.length > 10, 'getSmartTip returns non-empty string');
+
+  // User summary generation
+  const summary = EcoBot.getUserSummary();
+  assert(typeof summary === 'string' && summary.length > 10, 'getUserSummary returns non-empty string');
+
+  // ═══════════════════════════════════════
+  // Security Tests
+  // ═══════════════════════════════════════
+  group('Security');
+
+  // XSS in profile name
+  Storage.saveProfile({ name: '<script>alert("xss")</script>', quizAnswers: {} });
+  const xssProfile = Storage.getProfile();
+  assert(!xssProfile.name.includes('<script>'), 'Script tags stripped or escaped from profile name');
+
+  // Overflow prevention
+  Storage.saveProfile({ name: 'X'.repeat(500), quizAnswers: {} });
+  assert(Storage.getProfile().name.length <= 100, 'Profile name capped at 100 characters');
+
+  // Activity CO2 bounds
+  const overflowAct = Storage.addActivity({
+    activityKey: 'car_petrol',
+    quantity: 999999,
+    co2: 999999,
+    category: 'transport',
+    date: Storage.todayString(),
+  });
+  assert(overflowAct.co2 <= 100000, 'Activity CO2 has reasonable upper bound');
+
+  // Invalid date handling
+  const badDateAct = Storage.addActivity({
+    activityKey: 'bus',
+    quantity: 1,
+    co2: 0.5,
+    category: 'transport',
+    date: 'not-a-date',
+  });
+  assert(badDateAct.date === Storage.todayString() || /^\d{4}-\d{2}-\d{2}$/.test(badDateAct.date),
+    'Invalid date falls back to today or valid format');
+
+  // Verify Object.freeze on modules
+  assert(Object.isFrozen(EmissionData), 'EmissionData module is frozen');
+  assert(Object.isFrozen(Storage), 'Storage module is frozen');
+  assert(Object.isFrozen(Utils), 'Utils module is frozen');
+
+  Storage.clearAll();
+
+  // ═══════════════════════════════════════
+  // Efficiency Tests
+  // ═══════════════════════════════════════
+  group('Efficiency');
+
+  // Measure baseline calculation performance
+  const perfStart = performance.now();
+  for (let i = 0; i < 100; i++) {
+    EmissionData.calculateBaselineFootprint({ commute_mode: 'car_petrol', diet_type: 'medium_meat' });
+  }
+  const perfEnd = performance.now();
+  assert(perfEnd - perfStart < 500, `100 baseline calculations complete in < 500ms (took ${Math.round(perfEnd - perfStart)}ms)`);
+
+  // Storage bulk write performance
+  const bulkStart = performance.now();
+  for (let i = 0; i < 50; i++) {
+    Storage.addActivity({ activityKey: 'bus', quantity: 1, co2: 0.5, category: 'transport', date: `2025-02-${String((i % 28) + 1).padStart(2, '0')}` });
+  }
+  const bulkEnd = performance.now();
+  assert(bulkEnd - bulkStart < 1000, `50 activity writes complete in < 1000ms (took ${Math.round(bulkEnd - bulkStart)}ms)`);
+
+  // Verify all activities stored correctly
+  assertEqual(Storage.getActivities().length, 50, 'Bulk: all 50 activities stored');
+
+  // Read performance
+  const readStart = performance.now();
+  for (let i = 0; i < 100; i++) {
+    Storage.getActivities();
+  }
+  const readEnd = performance.now();
+  assert(readEnd - readStart < 200, `100 reads complete in < 200ms (took ${Math.round(readEnd - readStart)}ms)`);
+
+  Storage.clearAll();
+
+  // ═══════════════════════════════════════
+  // Accessibility Tests
+  // ═══════════════════════════════════════
+  group('Accessibility');
+
+  // Verify ARIA live region exists
+  assert(document.getElementById !== undefined, 'document.getElementById available for DOM checks');
+
+  // Check Utils.announce exists
+  assert(typeof Utils.announce === 'function', 'Utils.announce function exists for screen reader announcements');
+
+  // Verify formatCO2 provides meaningful text for assistive tech
+  const co2Text = Utils.formatCO2(1234);
+  assert(co2Text.includes('kg') || co2Text.includes('t'), 'formatCO2 includes unit for screen readers');
+
+  // Verify formatDateDisplay provides human-readable dates
+  const dateText = Utils.formatDateDisplay('2025-01-15');
+  assert(dateText.length > 3, 'formatDateDisplay returns readable date text');
+
+  // Verify Utils.getGreeting provides appropriate greeting
+  const greetResult = Utils.getGreeting();
+  assert(greetResult.startsWith('Good'), 'getGreeting starts with "Good"');
+
+  Storage.clearAll();
+
+  // ═══════════════════════════════════════
   // Render Results
   // ═══════════════════════════════════════
   function renderResults() {

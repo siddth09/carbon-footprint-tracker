@@ -17,6 +17,9 @@
 </head>
 <body>
 
+  <!-- Skip Navigation Link (Accessibility) -->
+  <a href="#main-content" class="skip-link" id="skip-nav">Skip to main content</a>
+
   <!-- Particle Background -->
   <canvas id="particles-canvas" aria-hidden="true"></canvas>
 
@@ -50,7 +53,7 @@
   <!-- ═══════════════════════════════════════════
        MAIN CONTENT
        ═══════════════════════════════════════════ -->
-  <main class="page-content" role="main">
+  <main class="page-content" role="main" id="main-content">
     <div class="container">
 
       <!-- ──────── ONBOARDING ──────── -->
@@ -162,6 +165,29 @@
             <div class="chart-wrapper" style="max-height: 260px;">
               <canvas id="chart-trend" aria-label="30-day emission trend"></canvas>
             </div>
+          </div>
+        </div>
+
+        <!-- What-If Simulator -->
+        <div class="card" style="margin-top: var(--space-lg);" id="whatif-section">
+          <div class="card-header">
+            <span class="card-title">🔄 What-If Simulator</span>
+            <span class="text-sm text-muted">See the impact of small changes</span>
+          </div>
+          <p class="text-sm text-muted" style="margin-bottom: var(--space-md);">Explore how switching daily habits could reduce your annual carbon footprint:</p>
+          <div class="whatif-grid" id="whatif-grid">
+            <!-- Rendered by ecobot.js -->
+          </div>
+        </div>
+
+        <!-- Achievement Badges -->
+        <div class="card" style="margin-top: var(--space-lg);">
+          <div class="card-header">
+            <span class="card-title">🏅 Achievements</span>
+            <span class="text-sm text-muted" id="achievements-count">0 / 12</span>
+          </div>
+          <div class="achievements-grid" id="achievements-grid">
+            <!-- Rendered by ecobot.js -->
           </div>
         </div>
 
@@ -425,6 +451,24 @@
     </div>
   </div>
 
+  <!-- ═══════════════════════════════════════════
+       MODAL: Share Card
+       ═══════════════════════════════════════════ -->
+  <div class="modal-backdrop" id="modal-share" role="dialog" aria-modal="true" aria-label="Share your carbon score">
+    <div class="modal-content" style="max-width: 420px;">
+      <div class="modal-header">
+        <h2>📤 Share Your Score</h2>
+        <button class="modal-close" id="share-close" type="button" aria-label="Close share dialog">&times;</button>
+      </div>
+      <div id="share-card-content">
+        <!-- Rendered by ecobot.js -->
+      </div>
+      <div class="flex gap-sm" style="margin-top: var(--space-lg); justify-content: center;">
+        <button class="btn btn-primary btn-sm" id="btn-share-copy" type="button">📋 Copy to Clipboard</button>
+      </div>
+    </div>
+  </div>
+
   <!-- Toast Container -->
   <div class="toast-container" id="toast-container" aria-live="polite"></div>
 
@@ -440,6 +484,7 @@
   <script src="js/insights.js"></script>
   <script src="js/dashboard.js"></script>
   <script src="js/challenges.js"></script>
+  <script src="js/ecobot.js"></script>
   <script src="js/app.js"></script>
 </body>
 </html>

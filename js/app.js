@@ -45,6 +45,7 @@ const App = (() => {
     Tracker.init();
     Insights.init();
     Challenges.init();
+    EcoBot.init();
   }
 
   function navigateTo(page) {
@@ -73,7 +74,11 @@ const App = (() => {
     history.replaceState(null, '', `#${page}`);
 
     // Refresh page data
-    if (page === 'dashboard') Dashboard.refresh();
+    if (page === 'dashboard') {
+      Dashboard.refresh();
+      EcoBot.refreshAchievements();
+      EcoBot.renderWhatIfSection();
+    }
     if (page === 'insights') Insights.refresh();
     if (page === 'challenges') Challenges.refresh();
     if (page === 'tracker') Tracker.render();

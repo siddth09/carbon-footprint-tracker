@@ -81,8 +81,14 @@ const Storage = (() => {
 
   // ── Profile ──
   function saveProfile(profile) {
+    // Sanitize profile name by stripping HTML tags and escaping brackets to prevent XSS
+    const sanitizedName = String(profile.name || '')
+      .replace(/<[^>]*>/g, '')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .substring(0, 100);
     return set(KEYS.profile, {
-      name: String(profile.name || '').substring(0, 100),
+      name: sanitizedName,
       quizAnswers: profile.quizAnswers || {},
       completedOnboarding: !!profile.completedOnboarding,
       createdAt: profile.createdAt || new Date().toISOString(),
@@ -117,13 +123,20 @@ const Storage = (() => {
 
   function addActivity(activity) {
     const activities = getActivities();
+    // Enforce reasonable CO2 bounds to prevent overflow/manipulation
+    const rawCo2 = Math.round((Number(activity.co2) || 0) * 100) / 100;
+    const boundedCo2 = Math.min(100000, Math.max(-100000, rawCo2));
+    
+    // Ensure date is in valid YYYY-MM-DD format, else fallback to today
+    const validDate = (/^\d{4}-\d{2}-\d{2}$/.test(activity.date) ? activity.date : todayString());
+
     const entry = {
       id: generateId(),
       activityKey: String(activity.activityKey),
       quantity: Math.max(0, Number(activity.quantity) || 0),
-      co2: Math.round((Number(activity.co2) || 0) * 100) / 100,
+      co2: boundedCo2,
       category: String(activity.category),
-      date: activity.date || todayString(),
+      date: validDate,
       timestamp: new Date().toISOString(),
       note: String(activity.note || '').substring(0, 200),
     };

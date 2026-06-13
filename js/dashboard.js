@@ -315,7 +315,7 @@ const Dashboard = (() => {
       btn.innerHTML = `
         <span class="icon" aria-hidden="true">${act.icon}</span>
         <span class="label">${act.label}</span>
-        <span class="co2">${act.factor >= 0 ? '+' : ''}${Utils.formatCO2(act.factor)} / ${act.unit}</span>
+        <span class="co2">${act.factor >= 0 ? '+' : '-'}${Utils.formatCO2(act.factor)} / ${act.unit}</span>
       `;
 
       btn.addEventListener('click', () => {

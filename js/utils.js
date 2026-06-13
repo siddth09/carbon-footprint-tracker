@@ -12,10 +12,11 @@ const Utils = (() => {
   // ── Number Formatting ──
   function formatCO2(kg) {
     if (typeof kg !== 'number' || isNaN(kg)) return '0 kg';
-    if (Math.abs(kg) >= 1000) {
-      return (kg / 1000).toFixed(1) + ' t';
+    const absKg = Math.abs(kg);
+    if (absKg >= 1000) {
+      return (absKg / 1000).toFixed(1) + ' t';
     }
-    return Math.round(kg) + ' kg';
+    return Math.round(absKg) + ' kg';
   }
 
   function formatNumber(num) {
