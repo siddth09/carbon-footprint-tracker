@@ -6,6 +6,8 @@
  * Open tests/test.html in a browser to run.
  */
 
+/* global EmissionData, Storage, Utils, EcoBot */
+
 'use strict';
 
 (() => {
@@ -467,6 +469,36 @@
   assert(greetResult.startsWith('Good'), 'getGreeting starts with "Good"');
 
   Storage.clearAll();
+
+  // ═══════════════════════════════════════
+  // Module API Validation
+  // ═══════════════════════════════════════
+  group('Module APIs');
+
+  assert(typeof Calculator === 'object', 'Calculator module is loaded');
+  assert(typeof Calculator.init === 'function', 'Calculator has init method');
+  assert(typeof Calculator.reset === 'function', 'Calculator has reset method');
+
+  assert(typeof Tracker === 'object', 'Tracker module is loaded');
+  assert(typeof Tracker.init === 'function', 'Tracker has init method');
+  assert(typeof Tracker.render === 'function', 'Tracker has render method');
+  assert(typeof Tracker.quickLog === 'function', 'Tracker has quickLog method');
+
+  assert(typeof Insights === 'object', 'Insights module is loaded');
+  assert(typeof Insights.init === 'function', 'Insights has init method');
+  assert(typeof Insights.refresh === 'function', 'Insights has refresh method');
+
+  assert(typeof Challenges === 'object', 'Challenges module is loaded');
+  assert(typeof Challenges.init === 'function', 'Challenges has init method');
+  assert(typeof Challenges.refresh === 'function', 'Challenges has refresh method');
+
+  assert(typeof Dashboard === 'object', 'Dashboard module is loaded');
+  assert(typeof Dashboard.init === 'function', 'Dashboard has init method');
+  assert(typeof Dashboard.refresh === 'function', 'Dashboard has refresh method');
+
+  assert(typeof App === 'object', 'App module is loaded');
+  assert(typeof App.navigateTo === 'function', 'App has navigateTo method');
+  assert(typeof App.showToast === 'function', 'App has showToast method');
 
   // ═══════════════════════════════════════
   // Render Results

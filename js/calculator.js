@@ -5,6 +5,8 @@
  * calculates baseline footprint, and shows results with comparisons.
  */
 
+/* global Utils, Storage, EmissionData, App */
+
 'use strict';
 
 const Calculator = (() => {
@@ -262,5 +264,7 @@ const Calculator = (() => {
     Utils.$('#input-name').value = '';
   }
 
-  return Object.freeze({ init, reset });
+  const Calculator = Object.freeze({ init, reset });
+  window.Calculator = Calculator;
+  return Calculator;
 })();

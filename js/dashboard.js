@@ -5,6 +5,8 @@
  * quick-log grid, and handles dynamic updates.
  */
 
+/* global Utils, Storage, EmissionData, App, Chart, Tracker */
+
 'use strict';
 
 const Dashboard = (() => {
@@ -167,7 +169,7 @@ const Dashboard = (() => {
           legend: {
             position: 'bottom',
             labels: {
-              color: getComputedStyle(document.documentElement).getPropertyValue('--text-secondary').trim() || '#9ca3af',
+              color: window.getComputedStyle(document.documentElement).getPropertyValue('--text-secondary').trim() || '#9ca3af',
               padding: 16,
               usePointStyle: true,
               pointStyleWidth: 10,
@@ -213,7 +215,7 @@ const Dashboard = (() => {
 
     if (trendChart) trendChart.destroy();
 
-    const accentPrimary = getComputedStyle(document.documentElement).getPropertyValue('--accent-primary').trim() || '#25c174';
+    const accentPrimary = window.getComputedStyle(document.documentElement).getPropertyValue('--accent-primary').trim() || '#25c174';
 
     trendChart = new Chart(ctx, {
       type: 'line',
@@ -251,7 +253,7 @@ const Dashboard = (() => {
           x: {
             grid: { color: 'hsla(0, 0%, 100%, 0.04)' },
             ticks: {
-              color: getComputedStyle(document.documentElement).getPropertyValue('--text-tertiary').trim() || '#555',
+              color: window.getComputedStyle(document.documentElement).getPropertyValue('--text-tertiary').trim() || '#555',
               font: { family: 'Inter', size: 10 },
               maxTicksLimit: 8,
             },
@@ -260,7 +262,7 @@ const Dashboard = (() => {
             beginAtZero: true,
             grid: { color: 'hsla(0, 0%, 100%, 0.04)' },
             ticks: {
-              color: getComputedStyle(document.documentElement).getPropertyValue('--text-tertiary').trim() || '#555',
+              color: window.getComputedStyle(document.documentElement).getPropertyValue('--text-tertiary').trim() || '#555',
               font: { family: 'Inter', size: 10 },
               callback: (v) => v + ' kg',
             },
@@ -269,7 +271,7 @@ const Dashboard = (() => {
         plugins: {
           legend: {
             labels: {
-              color: getComputedStyle(document.documentElement).getPropertyValue('--text-secondary').trim() || '#9ca3af',
+              color: window.getComputedStyle(document.documentElement).getPropertyValue('--text-secondary').trim() || '#9ca3af',
               usePointStyle: true,
               pointStyleWidth: 10,
               font: { family: 'Inter', size: 12 },
@@ -426,5 +428,7 @@ const Dashboard = (() => {
     container.innerHTML = insightsHTML;
   }
 
-  return Object.freeze({ init, refresh });
+  const Dashboard = Object.freeze({ init, refresh });
+  window.Dashboard = Dashboard;
+  return Dashboard;
 })();

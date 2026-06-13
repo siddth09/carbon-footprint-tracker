@@ -237,7 +237,7 @@ const Utils = (() => {
     if (region) {
       region.setAttribute('aria-live', priority);
       region.textContent = message;
-      setTimeout(() => { region.textContent = ''; }, 3000);
+      window.setTimeout(() => { region.textContent = ''; }, 3000);
     }
   }
 
@@ -286,8 +286,8 @@ const Utils = (() => {
   function debounce(fn, delay = 300) {
     let timer;
     return function (...args) {
-      clearTimeout(timer);
-      timer = setTimeout(() => fn.apply(this, args), delay);
+      window.clearTimeout(timer);
+      timer = window.setTimeout(() => fn.apply(this, args), delay);
     };
   }
 
@@ -314,7 +314,7 @@ const Utils = (() => {
   }
 
   // ── Public API ──
-  return Object.freeze({
+  const Utils = Object.freeze({
     formatCO2,
     formatNumber,
     formatPercent,
@@ -335,4 +335,7 @@ const Utils = (() => {
     clamp,
     getGreeting,
   });
+
+  window.Utils = Utils;
+  return Utils;
 })();

@@ -5,6 +5,8 @@
  * initialization, theme toggling, particles, and global utilities.
  */
 
+/* global Storage, Calculator, Dashboard, Tracker, Insights, Challenges, EcoBot, Utils */
+
 'use strict';
 
 const App = (() => {
@@ -170,7 +172,7 @@ const App = (() => {
 
     // Retake quiz
     Utils.$('#btn-retake-quiz').addEventListener('click', () => {
-      if (confirm('This will recalculate your baseline footprint. Continue?')) {
+      if (window.confirm('This will recalculate your baseline footprint. Continue?')) {
         Calculator.reset();
         showOnboarding();
       }
@@ -178,7 +180,7 @@ const App = (() => {
 
     // Clear data
     Utils.$('#btn-clear-data').addEventListener('click', () => {
-      if (confirm('⚠️ This will permanently delete ALL your data. This cannot be undone. Continue?')) {
+      if (window.confirm('⚠️ This will permanently delete ALL your data. This cannot be undone. Continue?')) {
         Storage.clearAll();
         Calculator.reset();
         showOnboarding();
@@ -296,24 +298,29 @@ const App = (() => {
     container.appendChild(toast);
 
     // Auto-remove
-    setTimeout(() => {
+    window.setTimeout(() => {
       toast.style.opacity = '0';
       toast.style.transform = 'translateY(10px)';
       toast.style.transition = 'all 0.3s ease';
-      setTimeout(() => toast.remove(), 300);
+      window.setTimeout(() => toast.remove(), 300);
     }, 3500);
   }
 
   // ── Initialize on DOM ready ──
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', init);
-  } else {
-    init();
+  if (typeof window !== 'undefined' && !window.__ECOLENS_TEST_ENV__) {
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', init);
+    } else {
+      init();
+    }
   }
 
-  return Object.freeze({
+  const App = Object.freeze({
     navigateTo,
     onOnboardingComplete,
     showToast,
   });
+
+  window.App = App;
+  return App;
 })();

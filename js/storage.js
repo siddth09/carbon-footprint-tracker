@@ -28,35 +28,7 @@ const Storage = (() => {
     version:     STORAGE_PREFIX + 'version',
   };
 
-  /**
-   * Safely stringify an object to JSON.
-   * @param {*} data - The input data to stringify
-   * @returns {string|null} The JSON string, or null if stringification fails
-   * @private
-   */
-  function safeStringify(data) {
-    try {
-      return JSON.stringify(data);
-    } catch (e) {
-      console.error('[Storage] Stringify error:', e);
-      return null;
-    }
-  }
 
-  /**
-   * Safely parse a JSON string.
-   * @param {string} raw - The raw JSON string
-   * @returns {*|null} The parsed object/value, or null if parsing fails
-   * @private
-   */
-  function safeParse(raw) {
-    try {
-      return JSON.parse(raw);
-    } catch (e) {
-      console.error('[Storage] Parse error:', e);
-      return null;
-    }
-  }
 
   /**
    * Check if localStorage is available and writable.
@@ -66,10 +38,10 @@ const Storage = (() => {
   function isLocalStorageAvailable() {
     try {
       const test = '__ecolens_test__';
-      localStorage.setItem(test, '1');
-      localStorage.removeItem(test);
+      window.localStorage.setItem(test, '1');
+      window.localStorage.removeItem(test);
       return true;
-    } catch (e) {
+    } catch {
       return false;
     }
   }
@@ -83,13 +55,11 @@ const Storage = (() => {
    */
   function set(key, value) {
     if (!isLocalStorageAvailable()) return false;
-    const json = safeStringify(value);
-    if (json === null) return false;
     try {
-      localStorage.setItem(key, json);
+      const json = JSON.stringify(value);
+      window.localStorage.setItem(key, json);
       return true;
-    } catch (e) {
-      console.error('[Storage] Write failed:', e);
+    } catch {
       return false;
     }
   }
@@ -97,26 +67,33 @@ const Storage = (() => {
   /**
    * Retrieve a value from localStorage.
    * @param {string} key - The storage key
-   * @param {*} [fallback=null] - Fallback value if key is not found
-   * @returns {*} The retrieved value, or the fallback
+   * @returns {*} The retrieved value, or null
    * @private
    */
   function get(key, fallback = null) {
     if (!isLocalStorageAvailable()) return fallback;
-    const raw = localStorage.getItem(key);
-    if (raw === null) return fallback;
-    const parsed = safeParse(raw);
-    return parsed !== null ? parsed : fallback;
+    try {
+      const raw = window.localStorage.getItem(key);
+      return raw ? JSON.parse(raw) : fallback;
+    } catch {
+      return fallback;
+    }
   }
 
   /**
    * Remove a key from localStorage.
    * @param {string} key - The key to remove
+   * @returns {boolean} True if successful
    * @private
    */
   function remove(key) {
-    if (!isLocalStorageAvailable()) return;
-    localStorage.removeItem(key);
+    if (!isLocalStorageAvailable()) return false;
+    try {
+      window.localStorage.removeItem(key);
+      return true;
+    } catch {
+      return false;
+    }
   }
 
   /**
@@ -343,11 +320,11 @@ const Storage = (() => {
   }
 
   // ── Init version ──
-  if (isLocalStorageAvailable() && !localStorage.getItem(KEYS.version)) {
-    localStorage.setItem(KEYS.version, String(DATA_VERSION));
+  if (isLocalStorageAvailable() && !window.localStorage.getItem(KEYS.version)) {
+    window.localStorage.setItem(KEYS.version, String(DATA_VERSION));
   }
 
-  return Object.freeze({
+  const Storage = Object.freeze({
     saveProfile,
     getProfile,
     saveBaseline,
@@ -367,4 +344,7 @@ const Storage = (() => {
     todayString,
     generateId,
   });
+
+  window.Storage = Storage;
+  return Storage;
 })();

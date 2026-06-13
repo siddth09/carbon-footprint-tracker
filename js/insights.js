@@ -6,6 +6,8 @@
  * Uses pattern detection and comparison against baseline.
  */
 
+/* global Utils, Storage, EmissionData */
+
 'use strict';
 
 const Insights = (() => {
@@ -333,5 +335,7 @@ const Insights = (() => {
     return div.innerHTML;
   }
 
-  return Object.freeze({ init, refresh });
+  const Insights = Object.freeze({ init, refresh });
+  window.Insights = Insights;
+  return Insights;
 })();

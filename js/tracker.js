@@ -5,6 +5,8 @@
  * and the add-activity modal with live CO₂ estimation.
  */
 
+/* global Utils, Storage, EmissionData, App, Dashboard, Insights */
+
 'use strict';
 
 const Tracker = (() => {
@@ -281,5 +283,7 @@ const Tracker = (() => {
     Utils.announce(`Quick logged: ${act.label}`);
   }
 
-  return Object.freeze({ init, render, quickLog });
+  const Tracker = Object.freeze({ init, render, quickLog });
+  window.Tracker = Tracker;
+  return Tracker;
 })();

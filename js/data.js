@@ -285,7 +285,7 @@ const EmissionData = (() => {
   }
 
   // ── Public API ──
-  return Object.freeze({
+  const EmissionData = Object.freeze({
     TRANSPORT,
     FOOD,
     ENERGY,
@@ -296,4 +296,7 @@ const EmissionData = (() => {
     QUIZ_QUESTIONS,
     calculateBaselineFootprint,
   });
+
+  window.EmissionData = EmissionData;
+  return EmissionData;
 })();

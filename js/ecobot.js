@@ -9,6 +9,8 @@
  * @requires EmissionData, Storage, Utils
  */
 
+/* global Utils, Storage, EmissionData, App */
+
 'use strict';
 
 const EcoBot = (() => {
@@ -234,7 +236,7 @@ const EcoBot = (() => {
 
     // Simple keyword-based intent detection
     const lower = text.toLowerCase();
-    setTimeout(() => {
+    window.setTimeout(() => {
       if (lower.includes('tip') || lower.includes('advice') || lower.includes('help') || lower.includes('suggest')) {
         handleAction('tip');
       } else if (lower.includes('summary') || lower.includes('overview') || lower.includes('how am i')) {
@@ -271,7 +273,7 @@ const EcoBot = (() => {
       case 'whatif':
         addBotMessage('Open the **What-If Simulator** below the Dashboard to explore different scenarios! I\'ve highlighted it for you. 🔄');
         if (typeof App !== 'undefined') App.navigateTo('dashboard');
-        setTimeout(() => {
+        window.setTimeout(() => {
           const section = Utils.$('#whatif-section');
           if (section) section.scrollIntoView({ behavior: 'smooth', block: 'center' });
         }, 500);
@@ -387,7 +389,6 @@ const EcoBot = (() => {
   function getUserSummary() {
     const activities = Storage.getActivities();
     const baseline = Storage.getBaseline();
-    const profile = Storage.getProfile();
 
     if (activities.length === 0) {
       return 'No data yet! Log some activities and I\'ll generate a summary of your carbon footprint trends.';
@@ -632,7 +633,7 @@ const EcoBot = (() => {
     // Copy text button
     Utils.$('#btn-share-copy').onclick = () => {
       const text = `🌿 My carbon footprint is ${Utils.formatCO2(baseline.total)}/year (${vsGlobalText}). I've completed ${completedCount} eco-challenges! Track yours with EcoLens. #EcoLens #CarbonFootprint #ClimateAction`;
-      navigator.clipboard.writeText(text).then(() => {
+      window.navigator.clipboard.writeText(text).then(() => {
         if (typeof App !== 'undefined') App.showToast('Copied to clipboard! 📋', 'success');
       }).catch(() => {
         if (typeof App !== 'undefined') App.showToast('Could not copy — try selecting the text manually', 'warning');
@@ -846,7 +847,7 @@ const EcoBot = (() => {
   }
 
   // ── Public API ──
-  return Object.freeze({
+  const EcoBot = Object.freeze({
     init,
     refreshAchievements,
     fireConfetti,
@@ -857,4 +858,7 @@ const EcoBot = (() => {
     getSmartTip,
     getUserSummary,
   });
+
+  window.EcoBot = EcoBot;
+  return EcoBot;
 })();

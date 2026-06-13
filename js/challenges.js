@@ -5,6 +5,8 @@
  * and completion tracking for gamified engagement.
  */
 
+/* global Utils, Storage, App */
+
 'use strict';
 
 const Challenges = (() => {
@@ -384,5 +386,7 @@ const Challenges = (() => {
     return div.innerHTML;
   }
 
-  return Object.freeze({ init, refresh });
+  const Challenges = Object.freeze({ init, refresh });
+  window.Challenges = Challenges;
+  return Challenges;
 })();
