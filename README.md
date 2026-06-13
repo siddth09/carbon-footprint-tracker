@@ -3,8 +3,6 @@
 **EcoLens** is a smart, dynamic web assistant that helps individuals understand, track, and reduce their carbon footprint through personalized insights, interactive simulations, and gamified eco-challenges.
 
 ![EcoLens](https://img.shields.io/badge/EcoLens-Carbon_Tracker-25c174?style=for-the-badge&logo=leaflet&logoColor=white)
-![Tests](https://img.shields.io/badge/Tests-80%2B_Passing-25c174?style=for-the-badge)
-![Size](https://img.shields.io/badge/Size-Under_300KB-25c174?style=for-the-badge)
 
 ## 🎯 Chosen Vertical
 
