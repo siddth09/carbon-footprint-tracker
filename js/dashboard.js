@@ -20,6 +20,7 @@ const Dashboard = (() => {
     renderStats();
     renderCharts();
     renderQuickLog();
+    renderWeeklySummary();
   }
 
   function renderGreeting() {
@@ -329,6 +330,100 @@ const Dashboard = (() => {
     Utils.$('#btn-go-to-tracker').addEventListener('click', () => {
       if (typeof App !== 'undefined') App.navigateTo('tracker');
     });
+  }
+
+  /**
+   * Render the Weekly Summary section on the dashboard.
+   * Compares the user's weekly emissions against their baseline and provides a contextual tip.
+   */
+  function renderWeeklySummary() {
+    const activities = Storage.getActivities();
+    const baseline = Storage.getBaseline();
+    const container = Utils.$('#weekly-summary-content');
+    if (!container) return;
+
+    // Filter activities in the last 7 days
+    const sevenDaysAgo = Utils.formatDateToString(new Date(Date.now() - 7 * 86400000));
+    const weeklyActs = activities.filter(a => a.date >= sevenDaysAgo);
+    const weeklyTotal = weeklyActs.reduce((s, a) => s + a.co2, 0);
+
+    const weeklyBaseline = baseline ? (baseline.total / 52) : 0;
+    const diff = weeklyBaseline > 0 ? (weeklyTotal - weeklyBaseline) : 0;
+    const diffPercent = weeklyBaseline > 0 ? Math.round((Math.abs(diff) / weeklyBaseline) * 100) : 0;
+
+    let comparisonHTML = '';
+    if (baseline) {
+      if (diff <= 0) {
+        comparisonHTML = `<span class="badge badge-success">↓ ${diffPercent}% below baseline</span>`;
+      } else {
+        comparisonHTML = `<span class="badge badge-danger">↑ ${diffPercent}% above baseline</span>`;
+      }
+    } else {
+      comparisonHTML = `<span class="badge badge-secondary">No baseline calculated</span>`;
+    }
+
+    // Category breakdown for the week
+    const catTotals = { transport: 0, food: 0, energy: 0, lifestyle: 0 };
+    weeklyActs.forEach(a => {
+      catTotals[a.category] = (catTotals[a.category] || 0) + a.co2;
+    });
+
+    const sortedCats = Object.entries(catTotals).sort((a, b) => b[1] - a[1]);
+    const topCategory = sortedCats.length > 0 && sortedCats[0][1] > 0 ? sortedCats[0][0] : null;
+
+    let insightsHTML = '';
+    if (weeklyActs.length === 0) {
+      insightsHTML = `<p class="text-muted text-sm" style="margin: 0; padding: var(--space-md) 0;">No activities logged in the past 7 days. Start logging daily activities under the **Log** tab to see your weekly performance report here!</p>`;
+    } else {
+      let adviceText = '';
+      if (topCategory === 'transport') {
+        adviceText = 'Your transportation emissions were your primary driver this week. Consider walking, cycling, or using public transit for short trips.';
+      } else if (topCategory === 'food') {
+        adviceText = 'Your diet choices contributed significantly to your footprint this week. Incorporating more plant-based meals next week can make a large impact.';
+      } else if (topCategory === 'energy') {
+        adviceText = 'Electricity and heating drove your emissions this week. Unplugging idle appliances and lowering the thermostat slightly will help reduce usage.';
+      } else if (topCategory === 'lifestyle') {
+        adviceText = 'Consumer goods and lifestyle choices were your main source of emissions. Try purchasing secondhand or opting for durable alternatives.';
+      } else {
+        adviceText = 'Fantastic job! Your weekly emissions are extremely low. Keep maintaining these sustainable habits!';
+      }
+
+      const greenActions = weeklyActs.filter(a => a.co2 < 0).length;
+      const greenText = greenActions > 0 
+        ? ` You logged <strong>${greenActions} green offset actions</strong> (e.g. recycling or composting) — outstanding work!`
+        : '';
+
+      insightsHTML = `
+        <div class="weekly-summary-grid">
+          <div class="weekly-summary-stats">
+            <div class="weekly-stat">
+              <span class="label">Total Emitted</span>
+              <span class="value">${Utils.formatCO2(weeklyTotal)}</span>
+            </div>
+            <div class="weekly-stat">
+              <span class="label">Weekly Baseline</span>
+              <span class="value">${baseline ? Utils.formatCO2(weeklyBaseline) : 'N/A'}</span>
+            </div>
+            <div class="weekly-stat">
+              <span class="label">Comparison</span>
+              <span class="value">${comparisonHTML}</span>
+            </div>
+          </div>
+          <div class="weekly-summary-details">
+            <h4 class="details-title">Weekly Performance Analysis</h4>
+            <p class="details-text">
+              Over the last 7 days, you emitted <strong>${Utils.formatCO2(weeklyTotal)}</strong> of carbon dioxide equivalents. 
+              ${baseline ? `This represents a difference of <strong>${Utils.formatCO2(Math.abs(diff))}</strong> compared to your average weekly target.${greenText}` : ''}
+            </p>
+            <p class="details-tip">
+              💡 <strong>Smart Tip:</strong> ${adviceText}
+            </p>
+          </div>
+        </div>
+      `;
+    }
+
+    container.innerHTML = insightsHTML;
   }
 
   return Object.freeze({ init, refresh });

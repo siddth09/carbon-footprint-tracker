@@ -3,6 +3,8 @@
  * 
  * Shared helpers for formatting, animation, date handling,
  * DOM manipulation, and accessibility.
+ * 
+ * @module Utils
  */
 
 'use strict';
@@ -10,6 +12,13 @@
 const Utils = (() => {
 
   // ── Number Formatting ──
+
+  /**
+   * Formats a CO₂ amount in kg or tonnes.
+   * Always displays absolute positive value.
+   * @param {number} kg - The CO2 amount in kg
+   * @returns {string} Formatted string (e.g. "1.2 t" or "350 kg")
+   */
   function formatCO2(kg) {
     if (typeof kg !== 'number' || isNaN(kg)) return '0 kg';
     const absKg = Math.abs(kg);
@@ -19,20 +28,40 @@ const Utils = (() => {
     return Math.round(absKg) + ' kg';
   }
 
+  /**
+   * Formats a number with thousands separators.
+   * @param {number} num - The number to format
+   * @returns {string} Formatted number string
+   */
   function formatNumber(num) {
     if (typeof num !== 'number' || isNaN(num)) return '0';
     return num.toLocaleString('en-US', { maximumFractionDigits: 1 });
   }
 
+  /**
+   * Formats a percentage value.
+   * @param {number} value - The percentage value
+   * @returns {string} Formatted percentage (e.g. "45%")
+   */
   function formatPercent(value) {
     return Math.round(value) + '%';
   }
 
   // ── Date Helpers ──
+
+  /**
+   * Returns today's date in YYYY-MM-DD format.
+   * @returns {string} Current date string
+   */
   function todayString() {
     return formatDateToString(new Date());
   }
 
+  /**
+   * Converts a date object into a YYYY-MM-DD string.
+   * @param {Date|string|number} date - The date to format
+   * @returns {string} Formatted date string
+   */
   function formatDateToString(date) {
     const d = new Date(date);
     return d.getFullYear() + '-' +
@@ -40,6 +69,12 @@ const Utils = (() => {
       String(d.getDate()).padStart(2, '0');
   }
 
+  /**
+   * Formats a YYYY-MM-DD string for display.
+   * Returns 'Today', 'Yesterday', or a readable date.
+   * @param {string} dateStr - Date string (YYYY-MM-DD)
+   * @returns {string} Readable display date
+   */
   function formatDateDisplay(dateStr) {
     const d = new Date(dateStr + 'T00:00:00');
     const today = new Date();
@@ -52,6 +87,11 @@ const Utils = (() => {
     return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
   }
 
+  /**
+   * Generates an array of YYYY-MM-DD dates leading up to today.
+   * @param {number} numDays - Number of days to include
+   * @returns {Array<string>} Array of date strings
+   */
   function getDaysArray(numDays) {
     const dates = [];
     for (let i = numDays - 1; i >= 0; i--) {
@@ -62,6 +102,12 @@ const Utils = (() => {
     return dates;
   }
 
+  /**
+   * Calculates the number of calendar days between two dates.
+   * @param {string} date1 - First date (YYYY-MM-DD)
+   * @param {string} date2 - Second date (YYYY-MM-DD)
+   * @returns {number} Number of days difference
+   */
   function daysBetween(date1, date2) {
     const d1 = new Date(date1);
     const d2 = new Date(date2);
@@ -69,14 +115,33 @@ const Utils = (() => {
   }
 
   // ── DOM Helpers (XSS-safe) ──
+
+  /**
+   * Selects a single element matching a CSS selector.
+   * @param {string} selector - CSS selector
+   * @returns {Element|null} The matched element
+   */
   function $(selector) {
     return document.querySelector(selector);
   }
 
+  /**
+   * Selects all elements matching a CSS selector.
+   * @param {string} selector - CSS selector
+   * @returns {NodeList} NodeList of matched elements
+   */
   function $$(selector) {
     return document.querySelectorAll(selector);
   }
 
+  /**
+   * Safely creates a DOM element with attributes and text content.
+   * Handles className, datasets, and ARIA attributes safely.
+   * @param {string} tag - Tag name (e.g. 'div')
+   * @param {Object} [attrs={}] - Attributes key-value map
+   * @param {string} [textContent=''] - Inner text (safely escapes user input)
+   * @returns {HTMLElement} The created element
+   */
   function createElement(tag, attrs = {}, textContent = '') {
     const el = document.createElement(tag);
     for (const [key, value] of Object.entries(attrs)) {
@@ -98,6 +163,10 @@ const Utils = (() => {
     return el;
   }
 
+  /**
+   * Clears all child nodes from a DOM element.
+   * @param {Element} el - The parent element
+   */
   function clearChildren(el) {
     while (el.firstChild) {
       el.removeChild(el.firstChild);
@@ -105,6 +174,15 @@ const Utils = (() => {
   }
 
   // ── Animation Helpers ──
+
+  /**
+   * Animates a numerical text counter using ease-out easing.
+   * Respects prefers-reduced-motion.
+   * @param {HTMLElement} el - Target element
+   * @param {number} target - Numerical target value
+   * @param {number} [duration=1200] - Duration of animation in ms
+   * @param {string} [suffix=''] - Optional text suffix (e.g. '%')
+   */
   function animateCounter(el, target, duration = 1200, suffix = '') {
     const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     if (prefersReducedMotion) {
@@ -128,6 +206,13 @@ const Utils = (() => {
     requestAnimationFrame(tick);
   }
 
+  /**
+   * Animates width transitions on progress bars.
+   * Respects prefers-reduced-motion.
+   * @param {HTMLElement} el - Progress bar fill element
+   * @param {number} targetPercent - Percentage width target (0-100)
+   * @param {number} [duration=800] - Animation transition duration in ms
+   */
   function animateProgressBar(el, targetPercent, duration = 800) {
     const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     if (prefersReducedMotion) {
@@ -141,6 +226,12 @@ const Utils = (() => {
   }
 
   // ── Accessibility ──
+
+  /**
+   * Dynamically announces messages for screen reader assistive technologies.
+   * @param {string} message - Text announcement
+   * @param {string} [priority='polite'] - ARIA-live priority (polite or assertive)
+   */
   function announce(message, priority = 'polite') {
     const region = document.getElementById('aria-live-region');
     if (region) {
@@ -150,6 +241,11 @@ const Utils = (() => {
     }
   }
 
+  /**
+   * Traps tab focus inside a container element (e.g. modal).
+   * @param {HTMLElement} container - The container element to trap focus in
+   * @returns {function|null} Cleanup function to remove focus trap listener
+   */
   function trapFocus(container) {
     const focusable = container.querySelectorAll(
       'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
@@ -180,6 +276,13 @@ const Utils = (() => {
   }
 
   // ── Misc ──
+
+  /**
+   * Creates a debounced version of a function.
+   * @param {function} fn - The function to debounce
+   * @param {number} [delay=300] - Debounce delay in ms
+   * @returns {function} Debounced function wrapper
+   */
   function debounce(fn, delay = 300) {
     let timer;
     return function (...args) {
@@ -188,10 +291,21 @@ const Utils = (() => {
     };
   }
 
+  /**
+   * Clamps a numerical value within bounds.
+   * @param {number} value - The input value
+   * @param {number} min - Lower bound
+   * @param {number} max - Upper bound
+   * @returns {number} Clamped value
+   */
   function clamp(value, min, max) {
     return Math.min(Math.max(value, min), max);
   }
 
+  /**
+   * Generates a greeting based on current local hour.
+   * @returns {string} Greeting prefix
+   */
   function getGreeting() {
     const hour = new Date().getHours();
     if (hour < 12) return 'Good morning';

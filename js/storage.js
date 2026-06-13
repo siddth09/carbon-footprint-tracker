@@ -3,6 +3,8 @@
  * 
  * Manages all localStorage CRUD operations with data validation,
  * migration support, and XSS-safe serialization.
+ * 
+ * @module Storage
  */
 
 'use strict';
@@ -12,7 +14,11 @@ const Storage = (() => {
   const STORAGE_PREFIX = 'ecolens_';
   const DATA_VERSION = 1;
 
-  // ── Keys ──
+  /**
+   * Internal storage key definitions.
+   * @type {Object<string, string>}
+   * @private
+   */
   const KEYS = {
     profile:     STORAGE_PREFIX + 'profile',
     baseline:    STORAGE_PREFIX + 'baseline',
@@ -22,7 +28,12 @@ const Storage = (() => {
     version:     STORAGE_PREFIX + 'version',
   };
 
-  // ── Helpers ──
+  /**
+   * Safely stringify an object to JSON.
+   * @param {*} data - The input data to stringify
+   * @returns {string|null} The JSON string, or null if stringification fails
+   * @private
+   */
   function safeStringify(data) {
     try {
       return JSON.stringify(data);
@@ -32,6 +43,12 @@ const Storage = (() => {
     }
   }
 
+  /**
+   * Safely parse a JSON string.
+   * @param {string} raw - The raw JSON string
+   * @returns {*|null} The parsed object/value, or null if parsing fails
+   * @private
+   */
   function safeParse(raw) {
     try {
       return JSON.parse(raw);
@@ -41,6 +58,11 @@ const Storage = (() => {
     }
   }
 
+  /**
+   * Check if localStorage is available and writable.
+   * @returns {boolean} True if localStorage is functional
+   * @private
+   */
   function isLocalStorageAvailable() {
     try {
       const test = '__ecolens_test__';
@@ -52,7 +74,13 @@ const Storage = (() => {
     }
   }
 
-  // ── Core CRUD ──
+  /**
+   * Set a value in localStorage.
+   * @param {string} key - The storage key
+   * @param {*} value - The value to store
+   * @returns {boolean} True if the write succeeded
+   * @private
+   */
   function set(key, value) {
     if (!isLocalStorageAvailable()) return false;
     const json = safeStringify(value);
@@ -66,6 +94,13 @@ const Storage = (() => {
     }
   }
 
+  /**
+   * Retrieve a value from localStorage.
+   * @param {string} key - The storage key
+   * @param {*} [fallback=null] - Fallback value if key is not found
+   * @returns {*} The retrieved value, or the fallback
+   * @private
+   */
   function get(key, fallback = null) {
     if (!isLocalStorageAvailable()) return fallback;
     const raw = localStorage.getItem(key);
@@ -74,12 +109,25 @@ const Storage = (() => {
     return parsed !== null ? parsed : fallback;
   }
 
+  /**
+   * Remove a key from localStorage.
+   * @param {string} key - The key to remove
+   * @private
+   */
   function remove(key) {
     if (!isLocalStorageAvailable()) return;
     localStorage.removeItem(key);
   }
 
-  // ── Profile ──
+  /**
+   * Save the user profile, applying HTML sanitization to prevent XSS.
+   * @param {Object} profile - User profile info
+   * @param {string} profile.name - The username
+   * @param {Object} [profile.quizAnswers] - Quiz response cache
+   * @param {boolean} [profile.completedOnboarding] - Quiz completion status
+   * @param {string} [profile.createdAt] - Creation ISO timestamp
+   * @returns {boolean} True if successful
+   */
   function saveProfile(profile) {
     // Sanitize profile name by stripping HTML tags and escaping brackets to prevent XSS
     const sanitizedName = String(profile.name || '')
@@ -96,11 +144,24 @@ const Storage = (() => {
     });
   }
 
+  /**
+   * Retrieve the user profile.
+   * @returns {Object|null} User profile, or null if not set
+   */
   function getProfile() {
     return get(KEYS.profile, null);
   }
 
-  // ── Baseline Footprint ──
+  /**
+   * Save calculated baseline emissions.
+   * @param {Object} baseline - The baseline metrics
+   * @param {number} baseline.transport - Transport emissions in kg CO2e
+   * @param {number} baseline.food - Food emissions in kg CO2e
+   * @param {number} baseline.energy - Energy emissions in kg CO2e
+   * @param {number} baseline.lifestyle - Lifestyle emissions in kg CO2e
+   * @param {number} baseline.total - Total annual baseline emissions in kg CO2e
+   * @returns {boolean} True if successful
+   */
   function saveBaseline(baseline) {
     return set(KEYS.baseline, {
       transport: Number(baseline.transport) || 0,
@@ -112,15 +173,33 @@ const Storage = (() => {
     });
   }
 
+  /**
+   * Retrieve the baseline footprint.
+   * @returns {Object|null} Baseline object, or null if not set
+   */
   function getBaseline() {
     return get(KEYS.baseline, null);
   }
 
-  // ── Activity Logging ──
+  /**
+   * Retrieve the full list of logged activities.
+   * @returns {Array<Object>} List of activity logs
+   */
   function getActivities() {
     return get(KEYS.activities, []);
   }
 
+  /**
+   * Add a new activity log, validating input bounds and dates.
+   * @param {Object} activity - The activity data
+   * @param {string} activity.activityKey - Activity type ID
+   * @param {number} activity.quantity - Activity multiplier/count
+   * @param {number} activity.co2 - Computed CO2 emission value
+   * @param {string} activity.category - Activity category (e.g. food)
+   * @param {string} [activity.date] - Date of the activity (YYYY-MM-DD)
+   * @param {string} [activity.note] - Optional custom user note
+   * @returns {Object} The created activity log entry
+   */
   function addActivity(activity) {
     const activities = getActivities();
     // Enforce reasonable CO2 bounds to prevent overflow/manipulation
@@ -145,29 +224,56 @@ const Storage = (() => {
     return entry;
   }
 
+  /**
+   * Delete an activity log entry by its ID.
+   * @param {string} id - The activity entry unique ID
+   * @returns {boolean} True if successful
+   */
   function deleteActivity(id) {
     const activities = getActivities().filter(a => a.id !== id);
     return set(KEYS.activities, activities);
   }
 
+  /**
+   * Retrieve activities logged on a specific date.
+   * @param {string} dateStr - Date string (YYYY-MM-DD)
+   * @returns {Array<Object>} List of matching logs
+   */
   function getActivitiesByDate(dateStr) {
     return getActivities().filter(a => a.date === dateStr);
   }
 
+  /**
+   * Retrieve activities logged within a date range (inclusive).
+   * @param {string} startDate - Start date (YYYY-MM-DD)
+   * @param {string} endDate - End date (YYYY-MM-DD)
+   * @returns {Array<Object>} List of matching logs
+   */
   function getActivitiesInRange(startDate, endDate) {
     return getActivities().filter(a => a.date >= startDate && a.date <= endDate);
   }
 
-  // ── Challenges ──
+  /**
+   * Retrieve challenge and points progression.
+   * @returns {Object} Challenge progress metrics
+   */
   function getChallenges() {
     return get(KEYS.challenges, { completed: [], active: null, points: 0, level: 1 });
   }
 
+  /**
+   * Save challenge progression metrics.
+   * @param {Object} data - Challenge status
+   * @returns {boolean} True if successful
+   */
   function saveChallenges(data) {
     return set(KEYS.challenges, data);
   }
 
-  // ── Settings ──
+  /**
+   * Retrieve app-wide user settings.
+   * @returns {Object} Settings details
+   */
   function getSettings() {
     return get(KEYS.settings, {
       theme: 'dark',
@@ -177,11 +283,19 @@ const Storage = (() => {
     });
   }
 
+  /**
+   * Save app-wide user settings.
+   * @param {Object} settings - Settings options
+   * @returns {boolean} True if successful
+   */
   function saveSettings(settings) {
     return set(KEYS.settings, settings);
   }
 
-  // ── Data Export / Import / Clear ──
+  /**
+   * Export all user data as a single JSON object.
+   * @returns {Object} Exported data package
+   */
   function exportAll() {
     return {
       version: DATA_VERSION,
@@ -194,19 +308,33 @@ const Storage = (() => {
     };
   }
 
+  /**
+   * Clear all app-related data from local storage.
+   */
   function clearAll() {
     Object.values(KEYS).forEach(key => remove(key));
   }
 
+  /**
+   * Verify if profile details exist.
+   * @returns {boolean} True if onboarding profile exists
+   */
   function hasData() {
     return getProfile() !== null;
   }
 
-  // ── Utility ──
+  /**
+   * Generate a unique ID string.
+   * @returns {string} Unique alphanumeric string
+   */
   function generateId() {
     return Date.now().toString(36) + Math.random().toString(36).substring(2, 8);
   }
 
+  /**
+   * Helper to return current date in local YYYY-MM-DD string format.
+   * @returns {string} Current date string
+   */
   function todayString() {
     const d = new Date();
     return d.getFullYear() + '-' +
@@ -219,7 +347,6 @@ const Storage = (() => {
     localStorage.setItem(KEYS.version, String(DATA_VERSION));
   }
 
-  // ── Public API ──
   return Object.freeze({
     saveProfile,
     getProfile,
